@@ -1,7 +1,9 @@
-function Body (props) {
-    console.log(name,location);
-    return <div className="body">
-        {props.name}은 {props.location}에 거주합니다
-        </div>;
-}
-export default Body;
+function Body({ name, studentnumber }) {
+    console.log(name, studentnumber);
+    return (
+      <div className="body">
+        {name}은 {studentnumber}입니다.
+      </div>
+    );
+  }
+  export default Body;
