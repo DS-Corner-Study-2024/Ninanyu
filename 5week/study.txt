@@ -15,3 +15,141 @@ header처럼 app의 return문에 포함된 컴포넌트를 '자식 컴포넌트'
 컴포넌으 트리에서 App은 항상 최상위에 존재하므로 이를 '루트 컴포넌트'파고 부름
 
 4) 컴포넌트별로 파일 분리하기
+src파일에 componenet 파일 생성 후 Header의 역할을 하는 기능을 구현(Header.js) => 이때 export를 이용하여
+외부에서 Header의 기능을 이용할 수 있게 설정.
+또한 app.js에서는 import 기능을 이용하여 컴포넌트를 사용
+
+5-(3) JSX
+리액트에서 컴포넌트는 자바스크립트 함수로 만드는데, 특이하게도 이 함수는 HTML값을 반환한다. 이렇듯 자바스크립트와
+HTML 태그를 섞어 사용하는 문법을 JSX라고 한다.
+
+1)JSX와 자바스크립트 표현식
+표현식이란 값으로 평가되는 식. JSX는 자바스크립트 표현식을 HTML 태그와 함께 사용할 수 있어 가독성 있는 코드를 작성
+
+- 산술 표현식
+숫자로 표현되는 식
+- 문자열 표현식
+문자열로 평가되는 식
+- 논리 표현식
+참이나 거짓으로 평가되는 식
+- 사용할수 없는 값
+
+2)JSX문법에서 지켜야 할 것들
+
+- 닫힘 규칙
+여는 태그 - 닫는 태그 (html 중 <img>,<input>은 닫힘 태그 없어도 되지만, JSX는 있어야 함)
+
+- 최상위 태그 규칙
+JSX가 반환하는 모든 태그는 반드시 최상위 태그로 감싸야 한다.
+
+3)조건문 렌더링
+리액트 컴포넌트가 조건식 결과에 따라 각기 다른 값을 페이지에 렌더링하는 것을 조건문 렌더링이라고 함
+
+- 삼항 연산자를 활용한 조건부 렌더링
+- 조건문을 이용한 조건부 렌더링
+가독성은 좋으나 기본적으로 작성해야 할 코드가 많고 중복 코드가 발생할 우려가 있다.
+
+4)JSX 스타일링
+
+- 인라인 스타일링
+인라인 스탕일링이란 JSX 문법 중 하나로 HTML의 style 속성을 이용해 직접 스탕일을 정의하는 방법
+
+function Body () {
+    return (
+        <div style={{backgroundColor: "red", color: "blue" }}>
+            <h1>body</h1>
+        </div>
+    );
+}
+export default Body;
+
+- 스타일 파일 분리
+html에서는 스타일을 정의한 css파일 따로 작성 후 <link rel='style sheet' href='css 파일경로'>형식으로
+불러와 사용함. JSX도 마찬가지로 css파일을 만들고 불러와 적용할 수 있음
+
+"css 파일"
+.body {
+    background-color: green;
+    color: blue;
+}
+
+"body.js 파일"
+import "./Body.css"
+
+function Body () {
+    return (
+        <div className="body">
+            <h1>body</h1>
+        </div>
+    );
+}
+export default Body;
+
+5-(3) 컴포넌트에 값 전달하기
+리액트 앱을 만들다 보면 컴포넌트가 다른 컴포넌트에 값을 전달해야 하는 상황이 생긴다.
+
+1)Props란?
+리액트에서는 부모가 자식 컴포넌트에 단일 객체 형태로 값을 전달할 수 있다. 이 객체를 리액트에서는 Props라고 한다.
+Props는 Properties의 줄임말로 속성이라는 뜻이다.
+
+리액트에서는 보통 재사용하려는 요소를 컴포넌트로 만든다. 예를 들어 게시판 페이지를 리액트로 만든다고 가정해 보자.
+사용자가 게시판에서 작성한 글은 게시물 리스트에서 하나의 항모긍로 표시된다. 그런데 이 리스트에 존재하는 여러
+게시물의 항목은 내용은 각각 다르지만, 모두 동일한 구조다. 리액트에서는 내용은 다른지만 구조가 같은 요소를 주로
+컴포넌트로 만든다. 여러 게시물 리스트를 페이지에 표시할 때는 이 컴포넌트를 반복해 렌더링하고, 게시물 각각의 내용은
+Props로 전달한다.
+
+2)Props로 값 전달하기
+Props는 부모만이 자식 컴포넌트에 전달할 수 있따. 그 역은 성립하지 않는다.
+
+- Props로 하나의 값 전달하기
+App.js 파일
+import './App.css';
+import Header from "./component/Header";
+import Body from "./component/Body";
+import Footer from "./component/Footer";
+
+function App() {
+  const name = "김덕성";
+  return (
+  <div className="App">
+    <Header />
+    <Body name={name}/>
+    <Footer />
+  </div>
+  );
+}
+
+export default App;
+
+body.js 파일
+function Body (props) {
+    console.log(props);
+    return <div className="body">{props.name}</div>;
+}
+export default Body;
+
+- Props로 여러 개의 값 전달하기
+점표기법 이용
+
+app.js파일
+function App() {
+  const name = "김덕성";
+  return (
+  <div className="App">
+    <Header />
+    <Body name={name} location={"부천시"}/>
+    <Footer />
+  </div>
+  );
+}
+
+body.js파일
+    return <div className="body">
+        {props.name}은 {props.location}에 거주합니다
+        </div>;
+
+-구조 분해 할당으로 여러 개의 값 사용하기
+-스프레드 연산자로 여러 개의 값 쉽게 전달하기
+-기본값 설정하기
+
+3)Props로 컴포넌트 전달하기
