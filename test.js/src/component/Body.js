@@ -1,9 +1,11 @@
-function Body({ name, studentnumber }) {
-    console.log(name, studentnumber);
-    return (
-      <div className="body">
-        {name}은 {studentnumber}입니다.
-      </div>
-    );
+function Body(){
+  function handleOnClick(){
+    alert("버튼을 클릭하셨군요!");
   }
+  return (
+    <div className="body">
+      <buttion onClick={handleOnClick}>클릭하세요</buttion>
+    </div>
+  );
+}
   export default Body;
