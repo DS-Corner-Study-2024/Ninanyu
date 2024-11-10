@@ -1,43 +1,27 @@
-import {useState} from "react";
+import {useRef, useState} from "react";
 
 function Body(){
-  const [name, setName] = useState("");
-  const [gender, setGender] = useState("");
-  const [birth, setBirth] = useState("");
-  const [bio, setBio] = useState("");
+ const[text,setText] = useState("");
+ const textRef = useRef();
 
-  const onChangeName = (e) => {
-    setName(e.target.value);
-  };
-  const onChangeGender = (e) => {
-    setGender(e.target.value);
-  };
-  const onChangeBirth = (e) => {
-    setBirth(e.target.value);
-  };
-  const onChangeBio = (e) => {
-    setBio(e.target.value);
-  };
+ const handleOnChange = (e) => {
+  setText(e.target.value);
+ };
 
-  return (
-    <div>
-      <div>
-        <input value={name} onChange={onChangeName} placeholder="이름" />
-      </div>
-      <div>
-        <select value={gender} onChange={onChangeGender}>
-          <option key={""}></option>
-          <option key={"남성"}>남성</option>
-          <option key={"여성"}>여성</option>
-        </select>
-      </div>
-      <div>
-        <input type="date" value={birth} onChange={onChangeBirth} />
-      </div>
-      <div>
-        <textarea value={bio} onChange={onChangeBio} />
-      </div>
-    </div>
-  );
+ const handleOnClick = () => {
+  if (text.length<5) {
+    textRef.current.focus();
+  } else{
+    alert(text);
+    setText("");
+  }
+ };
+
+ return (
+  <div>
+    <input ref={textRef} value={text} onChange={handleOnChange} />
+    <button onClick={handleOnClick}>작성 완료</button>
+  </div>
+ );
 }
   export default Body;
