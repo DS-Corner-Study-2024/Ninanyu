@@ -1,17 +1,15 @@
-import './App.css';
+import "./App.css";
 import Header from "./component/Header";
-import TodoEditor from './component/TodoEditor';
+import TodoEditor from "./component/TodoEditor";
+import TodoList from "./component/TodoList";
 
 function App() {
-  return(
+  return (
     <div className="App">
       <Header />
       <TodoEditor />
-      <div>Header</div>
-      <div>Todo Editor</div>
-      <div>Todo List</div>
+      <TodoList />
     </div>
-  )
+  );
 }
-
 export default App;
