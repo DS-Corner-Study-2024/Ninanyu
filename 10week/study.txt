@@ -1,0 +1,205 @@
+Read: 할 일 리스트 렌더링하기
+
+배열을 리스트로 렌더링하기
+App 컴포넌트의 State 변수 todo에는 배열 형태로 여러 개의 할 일 아이템이 저장되어 있다. 배열 todo를 TodoList
+컴포넌트에 Props로 전달한다.
+
+//App.js
+(...)
+function App() {
+    const [todo, setTodo] = useState(mockTodo);
+    (...)
+    return(
+        <div className="App">
+            <Header />
+            <TodoEditor onCreate={onCreate} />
+            <TodoList todo = {todo} />
+        </div>
+    );
+}
+export default App;
+
+TodoList 컴포넌트에서는 App에서 Props로 전달된 todo를 리스트로 레넏링해야 한다. 리액트에서 배열 데이터를
+렌더링할 때는 배열 메서드 map을 주로 이용한다. map을 이용하면 HTML 또는 컴포넌트를 순회하면서 매 요소를
+반복하여 렌더링한다.
+
+- map을 이용한 HTML 반복하기
+TodoList 컴포넌트에서 배열 메서드 map을 이용해 HTML 요소를 반복해 렌더링한다.
+
+//TodoList.js
+import TodoItem from "./TodoList";
+import "./TodoList.css";
+
+const TodoList = ({ todo }) => {
+    return (
+        <div className="TodoList">
+            <h4> Todo List 🌱 </h4>
+            <input className = "serchbar" placeholder ="검색어를 입력하세요" />
+            <div className="list_wrapper">
+                {todo.map((it) => (
+                    <div>{it.content} </div>
+                ))}
+            </div>
+        </div>
+    );
+};
+export defalt TodoList;
+
+- map을 이요해 컴포넌트 반복하기
+
+//TodoList.js
+import TodoItem from "./TodoItem";
+import "./TodoList.css";
+
+const TodoList = ({ todo }) => {
+    return (
+        <div className="TodoList">
+            <h4> Todo List 🌱 </h4>
+            <input className="serchbar" placeholder="검색어를 입력하세요" />
+            <div className="list_wrapper">
+                {todo.map ((it) => (
+                    <TodoItem {...it} />
+                ))}
+            </div>
+        </div>
+    );
+};
+export default TodoListl
+
+TodoItem 컴포넌트에서 전달된 Props를 이 컴포넌트에서 사용할 수 있도록 수정
+
+import "./TodoItem.css";
+
+const TodoItem = ({ id, content, isDone, createdDate }) => {
+    return (
+        <div className="TodoItem">
+            <div className="checkbox_col">
+                <input checked={isDone} type="checkbox" />
+            </div>
+            <div className="title_col">{content}</div>
+            <div className="date_col">
+                {new Date(createdDate).toLocaleDateString()}
+            </div>
+            <div className="btn_col">
+                <button>삭제</button>
+            </div>
+        </div>
+    );
+};
+export default TodoItem;
+
+개발자 도구의 콘솔을 열면 여러 가지 경고 메시지가 출력되는 걸 볼 수 있다. 나중에 체크박스에 onChange 이벤트
+핸들러를 설정할 예정이므로 지금은 무시해도 된다.
+
+- key 설정하기
+리액트는 리스트에서 특정 컴포넌트를 수정,추가,삭제하는 경우, 이 key로 어떤 컴포넌트를 업데이트할지 결정한다.
+따라서 리스트의 각 컴포넌트를 key로 구분하지 않으면 생성, 수정, 삭제와 같은 연산을 수행할 수 없거나 비효율적으로
+탐색하게 된다.
+
+id를 key로 전달하면 문제를 간단히 해결할 수 있다.
+
+//TodoList.js
+(...)
+const TodoList = ({ todo }) => {
+    return (
+        <div className ="TodoList">
+        (...)
+            <div className="list_wrapper">
+                {todo.map((it) => (
+                    <TodoItem key={it.id} {...it} />
+                ))}
+            </div>
+        </div>
+    );
+};
+exprt default TodoList;
+
+map을 이용해 컴포넌트를 리스트 형태로 반복적으로 렌더링하려면 반드시 리스트 내의 고유한 key를 Props로 전달해야
+한다.
+
+
+<검색어에 따라 필터링하기>
+
+- 검색 기능 만들기
+//TodoList.js
+(...)
+const TodoList = ({ todo }) => {
+    (...)
+    const getSearchResult = () => {
+        return search === ""
+            ? todo
+            : todo.filter((it) => it.content.includes(search));
+    };
+    return (
+        <div className="TodoList">
+         (...)
+         <div className="list_wrapper">
+            {getSearchResult().map((it) => (
+                <TodoItem key={it.id} {...it} />
+            ))}
+         </div>
+        </div>
+    );
+};
+export default TodoList;
+
+- 대소 문자를 구별하지 않게 하기
+//TodoList.js
+(...)
+const getSearchResult = () => {
+    return search === ""
+    ? todo
+    : todo.filter((it) =>
+        it.content.toLowerCase().includes(search.toLowerCase())
+    );
+};
+(...)
+
+
+<Update: 할 일 수정하기>
+- 기능 흐름 살펴보기
+1. 사용자가 TodoITem의 체크박스에 틱(체크 표시)한다.
+2. TodoItem 컴포넌트는 함수 onUpdate를 호출하고 어떤 체크박스에 틱이 발생했는지 해당 아이템의 id를 인수로
+   전달한다. 물론 그 전에 함수 onUpdate를 App 컴포넌트에서 Props로 TodoItem에 전달해야 한다.
+3. App 컴포넌트의 함수 onUpdate는 틱이 발생한 아이템의 상태(완료 또는 미완료)를 토글하기 위해 State 값을 
+   업데이트 한다.
+4. App 컴포넌트의 State 값이 변경되면 TodoList에 전달하는 Props의 값 또한 변경된다.
+5. TodoList는 변경된 State 값을 다시 리스트로 렌더링한다. 결과적으로 수정사항이 반영된다.
+
+- 아이템 수정 함수 만들기
+//App.js
+(...)
+const onUpdate = (targeId) => {
+    setTodo (
+        todo.map((it) =>
+            it.id === targetId ? { ...it, isDone: !it.isDone} : it
+        )
+    );
+};
+(...)
+
+//TodoList.js
+(...)
+const TodoList = ({ todo, onUpdate }) => {
+    (...)
+    return (
+        <div className ="TodoList>
+            (...)
+            <div className = "list_wrapper">
+                {getSearchResult().map((it) => (
+                    <TodoItem key={it.id} {...it} onUpdate={onUpdate} />
+                ))}
+            </div>
+        </div>
+    );
+};
+export default TodoList;
+
+리액트 컴포넌트는 바로 한 단계 자식 컴포넌트에만 데이터를 전달할 수 있다. 따라서 한 단계 이상 떨어져 있는
+자식 컴포넌트에 데이터를 전달하려면 현재로서는 전달에 전달을 반복하는 수밖에 없다.
+따라서 TodoList 자신은 해당 함수를 사용하지 않지만, TodoItem 컴포넌트에 함수 onUpdate를 전달해야 하므로
+Props로 받아 다시 전달하는 일종의 매개 역할을 수행한다. 이는 리액트에서 State와 Props를 사용할 때 흔히 발생하는
+일이다. 이런 상황을 "Props가 마치 땅을 파고 내려가는 것 같다"라고 하여 'Props Drilling' 이라고 한다.
+
+
+- TodoItem 컴포넌트에서 아이템 수정 함수 호출하기
