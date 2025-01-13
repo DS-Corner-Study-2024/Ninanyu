@@ -1,0 +1,404 @@
+1. Context
+1-(1) Context를 사용하는 이유
+
+Context를 사용하는 까닭은 'Props Drilling' 문제를 해결하기 위해서다. Props Drilling 문제는 리액트 컴포넌트 계층 구조에서 컴포넌트 간에 값을 전달할 때 발생한다. 리액트에서는 트리에서 2단계 이상 떨어져 있는 컴포넌트에 직접 데이터를 전달하는 것이 불가능하다. 2단계 이상 떨어져 있는 컴포넌트에 모두 같은 값을 전달해야 한다면 경로상에 있는 모든 컴포넌트에 일일이 Props를 전달해야 한다.
+
+Props를 전달하는 과정이 마치 드릴로 땅을 파고 내려가는 것과 같다고 하여, Props Drilling 문제라고 하며, Props Drilling은 컴포넌트 사이의 데이터 교환 구조를 파악하기 어렵게 만든다. 또한 Props를 수정하게 되면 그것을 공유하는 여러 컴포넌트를 모두 살펴 봐야 하므로 코드의 유지 보수를 어렵게 한다. 
+
+
+
+
+
+1-(2) Context란?
+
+리액트에서 Context는 같은 문맥 아래에 있는 컴포넌트 그룹에 데이터를 공급하는 기능이라는 의미로 사용된다. Context를 이용하면 단계마다 일일이 Props를 전달하지 않고도 컴포넌트 트리 전역에 데이터를 공급할 수 있어 Props Drilling 문제를 간단히 해결할 수 있다.
+
+
+
+
+
+1-(3) ContextAPI
+
+Context 만들기
+
+React.createContext를 이용하면 새로운 Context를 만들 수 있다.
+
+import React from 'react';
+const MyContext = React.createContext(defaultValue); ①
+① createContext 메서드를 호출해 새로운 Context를 만든다. 인수로 전달하는 값은 Context의 기본값으로 생략할 수 있다.
+
+
+
+Context에 데이터 공급하기
+
+Context에서 데이터를 공급하려면 Context.Provider 기능을 사용해야 한다. Context.Provider는 Context 객체에 기본으로 포함된 컴포넌트다.
+
+import React from 'react';
+
+const MyContext = React.createContext(defaultValue);
+
+function App () {
+    const data = 'data';
+    return (
+        <div>
+            <Header/>
+            <MyContext.Provider value={data}> ①
+                <Body/>
+            </MyContext.Provider>
+        </div>
+    );
+}
+export default App;
+① Provider가 설정한 자식, 자손 컴포넌트들은 MyContext로 묶여 이 객체에서 공급하는 데이터를 사용할 수 있다. Provider 컴포넌트에 Props를 전달해 MyContext가 공급할 값을 설정한다.
+
+
+
+Provider 컴포넌트는 Props로 공급할 데이터를 받아, 컴포넌트 트리에서 자신보다 하위에 있는 모든 컴포넌트에 데이터를 공급한다.
+
+
+
+Context가 공급하는 데이터 사용하기
+
+import React, {useaContext} from 'react'
+
+const MyContext = React.createContext(defaultValue);
+
+function App () {
+	(...)
+}
+
+function MAin () {
+	const data = useContext(MyContext); ①
+	(...)
+}
+① useContext를 호출하고 인수로 값을 공급할 Context를 전달한다. 
+
+
+
+useContext를 이용하면 자신이 속한 그룹의 Context가 제공하는 값을 불러올 수 있다. 만약 useContext를 호출한 컴포넌트가 인수로 전달한 Context 그룹에 속해 있지 않으면 오류가 발생한다. 코드상의 Main 컴포넌트는 MyContext 그룹에 속하기 때문에 문제가 발생하지 않는다.
+
+
+
+정리하자면 createContext를 이용해 Context를 만들고, 값을 공급할 컴포넌트를 Context.Provider로 감싼다. 그리고 함수 useContext를 호출해 Context가 공급하는 값을 불러와 사용한다.
+
+
+
+
+
+2. Context로 [할 일 관리] 앱 리팩토링하기
+리팩토링이란 사용자에게 제공하는 기능은 변경하지 않으면서 내부 구조를 개선하는 작업이다. 현재 [할 일 관리] 앱은 데이터 전달 구조가 State와 Props로만 이루어져 있어 Props Drilling 문제를 일으킨다. 따라서 Props Drilling은 제거하지만, 할 일 아이템의 기능은 변함없이 동작하도록 Context를 이용해 내부 구조를 개선해야 한다.
+
+
+
+2-(1) 어떻게 Context를 적용할지 생각해보기
+
+TodoItem이 Props를 사용하려면, 리액트의 데이터 전달 구조 특성상 TodoList 컴포넌트를 거쳐서 전달해야 하기 때문에 Props Drilling 문제가 발생한다.
+
+→ TodoContext라는 이름의 Context를 만들고, App 컴포넌트 하위에 데이터를 공급하는 TodoContext.Provider를 배치한다. 그리고 TodoEditor, TodoList, TodoItem 컴포넌트를 해당 Provider 래에 배치한다.
+
+
+
+
+
+2-(2) TodoContext를 만들어 데이터 공급하기
+
+
+
+TodoContext 만들기
+
+// App.js
+import React, {useCallback, useReducer, useRef} from "react";
+(...)
+const TodoContext = React.createContext();
+
+function App () {
+	(...)
+}
+export default App;
+
+
+Context는 반드시 컴포넌트 밖에서 생성해야 한다는 점에 유의해야 한다. 만약 안에서 생성되면, 컴포넌트가 리렌더될 때마다 Context를 새롭게 생성하기 때문에 의도대로 동작하지 않는다.
+
+
+
+데이터 공급하기
+
+// App.js
+
+import React, {useCallback, useReducer, useRef} from "react";
+(...)
+const TodoContext = React.createContext();
+
+function App() {
+    (...)
+    return (
+        <div className="App">
+            <Header/>
+            <TodoContext.Provider value={{ todo, onCreate, onUpdate, onDelete }}>
+                <TodoEditor/>
+                <TodoList/>
+            </TodoContext.Provider>
+        </div>
+    );
+}
+export default App;
+TodoContext가 포함할 컴포넌트는 TodoEditor와 TodoList다. 따라서 두 컴포넌트를 감싸도록 Provider를 배치한다.
+TodoCOntext.Provider 컴포넌트에 값을 전달하기 위해 Props를 객체로 설정하며, 이 객체에는 Context에 소속된 컴포넌트에 공급할 모든 값을 담는다.
+컴포넌트 트리 구조에서 TodoContext 하위에 배치한 컴포넌트는 이제 이 Context에서 데잍터를 받으므로 TodoEditor와 TodoList에 전달하던 기존의 Props는 모두 제거한다.
+오류 해결하기
+
+기존에 App 컴포넌트에서 전달하던 Props를 제거하면 "Cannot read properties of undefined (reading 'length')"라는 오류 문장이 발생한다. 해당 문장은 "TodoList 컴포넌트에서 객체가 아닌 undefined 값에 length 프로퍼티로 접근하기 때ㅜㅁㄴ에 오류가 발생한다"라고 알려준다. TodoList 컴포넌트에서 오류 메시지가 가리키는 곳의 코드를 수정하자.
+
+// TodoList.js
+(...)
+    const analyzeTodo = useMemo(() => {
+        const totalCount = todo.length;
+        const doneCount = todo.filter((it) => it.isDone).length;
+        const notDoneCount = totalCount - doneCount;
+        return{
+            totalCount,
+            doneCount,
+            notDoneCount,
+        };
+    },[todo]);
+(...)
+앞서 App에서 TodoList 컴포넌트에 전달하는 Props를 모두 제거했기 때문에 todo 값이 undefined이므로 length 프로퍼티에 접근하면 오류가 발생한다. 
+위 코드와 같이 todo의 기본값을 빈 배열로 하는 defaultProps를 설정하면 오류는 일단 발생하지 않는다.
+
+const TodoList = ({todo,onUpdate,onDelete}) => {
+    (...)
+}
+
+TodoList.defaultProps = {
+    todo: [],
+};
+export default TodoList;
+위 코드를 TodoList에 추가로 작성한다.
+
+
+
+Provider가 데이터를 잘 제공하는지 확인하기
+
+[Components] 탭에서 Context.Provider를 클릭한다. 계속해서 props 항복의 value를 클릭하면 Context에 공급한 데이터를 확인할 수 있다. Context.Provider를 살펴보면 App에서 전달한 Props가 컴포넌트에 저장되어 있음을 확인할 수 있다.
+
+
+
+
+
+2-(3) TodoList 컴포넌트에서 Context 데이터 사용하기
+
+TodoContext를 App.js에 선언했기 때문에 다른 파일에서 불러올 수 있도록 export로 내보내야 한다.
+
+// App.js
+(...)
+export const TodoContext = React.createContext();
+(...)
+
+
+TodoList 컴포넌트에서 TodoContext를 불러오고, useContext를 이용해 이 Context가 공급하는 데이터를 가져오겠다.
+
+// TodoList.js
+import {useContext,useMemo,useState} from "react";
+import {TodoContext} from "../App";
+(...)
+const TodoList = () => {
+    const {todo,onUpdate,onDelete} = useContext{TodoContext};
+    const storeData = useContext(TodoContext);
+    console.log(sotreData);
+    (...)
+};
+(...)
+export default TodoList;
+TodoList 컴포넌트는 더 이상 App에서 어던 Props도 받지 않기 대문에 Props를 매개변수로 구조 분해 할당하는 기존 코드를 제거한다.
+TodoContext에서 공급받은 값을 구조 분해 할당한다. 이 값들이 기존 TodoList의 Props를 대체한다.
+useContext를 호출하고 TodoCOntext를 인수로 전달해 이 Context가 공급하는 데이터를 storeDate에 저장한다.
+App 컴포넌트가 TodoContext에 제공한 데이터를 TodoList에서도 모두 불러오는 것을 확인 했다면 console.log(storeDate)는 삭제한다.
+
+
+2-(4) TodoItem 컴포넌트에서 Context 데이터 사용하기
+
+TodoItem 컴포넌트에서도 Context가 공급하는 데이터를 불러와야 한다. 기존의 TodoITem은 수정, 삭제 이벤트 핸들러인 onUpdate, onDelete를 TodoList에서 받았다. 이제 TodoItem도 함수 onUpdate와 onDelete를 Context에서 직접 불러와 사용할 수 있다.
+
+// TodoList.js
+(...)
+const TodoList = () => {
+    const {todo} = useContext(TodoContext);
+    (...)
+    return (
+        <div className="TodoList">
+            (...)
+            <div className="list_wrapper">
+                {getSearchResult().map((it) => (
+                    <TodoItem key={it.id} {...it} />
+                ))}
+            </div>
+        </div>
+    );
+};
+export default TodoList;
+TodoList는 더 이상 onUpdate와 onDelete를 사용하지 않으므로 todo만 구조 분해 할당한다.
+TodoList 컴포넌트에서 기존에 Props로 전달하던 코드도 제거한다.
+// TodoItem.js
+import React, {useContext} from "react";
+import {TodoContext} from "../App";
+(...)
+const TodoItem = ({id, content, isDone, createdDate}) => {
+    const {onUpdate,onDelete} = useContext(TodoContext);
+    (...)
+};
+export default React.memo(TodoItem);
+onUpdate, onDelete를 더 이상 구조 분해 할당하지 않는다.
+useContext를 호출해 TodoContext가 공급하는 값을 불러와 구조 분해 할당한다.
+
+
+2-(4) TodoEditor 컴포넌트에 데이터 공급하기
+
+끝으로 TodoEditor 컴포넌트에서 할 일 아이템을 생성하는 함수 onCreate를 TodoContext에서 받도록 수정한다.
+
+// TodoEditor.js
+import { useContext,useRef,useState } from "react";
+import {TodoContext} from "../App";
+(...)
+const TodoEditor = () => {
+    const {onCreate} = useContext(todoContext);
+    (...)
+};
+(...)
+useContext를 호출해 TodoContext가 공급하는 값을 불러와 구조 분해 할당한다.
+
+
+2-(5) 리팩토링이 잘 되었는지 확인하기1
+
+리팩토링은 기능은 그대로 유지하면서 내부 구조만 변경해 개선하는 일이므로 리팩토링 후 이전에 정상적이었던 기능이 제대로 동작하지 않는다면 리팩토링이 잘 됐다고 할 수 없다. 최적화에 문제가 없는지 점검 해 보자.
+
+TodoItem 컴포넌트는 할 일 아이템의 개수만큼 반복해 렌더링하기 때문에 최적화에 문제가 생기며 서비스에 치명적이다. 이전에 최적화를 위해 TodoItem 컴포넌트에 적용했던 React.memo가 리팩토링 후에도 제대로 동작하는지 다시 확인한다.
+
+// TodoItem.js
+(...)
+const TodoItem = ({id, content, isDone, createdDate}) => {
+    console.log('${id} TodoItem 업데이트');
+    (...)
+};
+export default React.memo(TodoItem);
+
+
+할 일 아이템을 생성한 후 콘솔을 확인하면, 모든 TodoItem 컴포넌트가 리렌더되는 것을 알 수 있다. 이는 React.memo가 리팩토링 이후 정상적으로 동작하지 않는다는 것을 의미한다. 따라서 문제의 원인을 파악하기 위해 컴포넌트 트리 구조를 다시 살펴보겠다.
+
+
+
+
+
+2-(6) 문제의 원인 파악하기&구조 재설계하기
+
+State 변수 todo와 onCreate,onUpdate,onDelete와 같은 dispatch 관련 함수들이 하나의 객체로 묶여 동일한 Context에 Props로 전달되기 때문에 todo가 변하면 TodoContext.Provder에서 전달하는 모든 Props 또한 바뀐다는 문제가 발생한다.
+
+
+
+이때는 Context를 역할에 따라 분리하는 게 바람직하다.
+
+TodoStateContext: todo가 업데이트되면 영향받는 컴포넌트를 위한 Context
+TodoDispatchContext: dispatch 함수 onCreate, onUpdate, onDelete가 변경되면 영향을 받는 컴포넌트를 위한 Context
+Context를 역할에 따라 두 개로 분리하면 todo를 업데이트하더라도 TodoStateContext에서 todo 데이터를 받는 컴포넌트만 리렌더된다.
+
+
+
+
+
+2-(7) 재설계된 구조로 변경하기
+
+Context 분리하기
+
+변경된 구조로 리팩토링하기 위해 기존에 App 컴포넌트에서 만든 TodoContext는 삭제하고, todo를 공급할 dispatch 함수 와 TodoStateContext를 공급할 todoDispatchContext 파일을 각각 만들어 배치한다.
+
+// App.js
+import React, {useMemo, useReducer, useCallback, useRef} from "react";
+import TodoList from "./TodoList";
+export const TodoStateContext = React.createContext();
+export const TodoDispatchContext = React.createContext();
+
+function App(){
+    (...)
+    const memoizedDispatches = useMemo(() => {
+        return {onCreate,onUpdate,onDelete};
+    },[]);
+
+    return(
+        <div className="App">
+            <Header />
+            <TodoStateContext.Provider value={todo}>
+                <TodoDispatchContext.Provider value={memoizedDispatches}>
+                    <TodoEditor />
+                    <TodoList />
+                </TodoDispatchContext.Provider>
+            </TodoStateContext.Provider>
+        </div>
+    );
+}
+export default App;
+useMemo를 이용해 함수 onCreate, onUpdate, onDelete를 묶은 객체를 App 컴포넌트가 리렌더 되어도 다시 생성하니 않도록 한다.
+위의 과정으로 만든 memoizedDispatches 객체를 TodoDispatchContext.Provider의 Props로 전달한다.
+useCallback을 적용한 함수 onUpdate, onDelete는 다시 생성되지 않으나, Props로 전달하기 위해 묶은 3개의 함수 객체는 다시 생성된다. 따라서 이 객체를 다시 생성하지 않도록 useMemo를 이용했다.
+
+저장하고 결과를 확인하면 기존에 만들었던 TodoContext를 제거하고 2개의 Context를 새로 생성했기 때문에 오류가 발생한다. 따라서 Context에서 데이터를 받는 자식 컴포넌트들을 수정한다.
+
+
+
+TodoEditor 수정하기
+
+TodoEdiotr 컴포넌트는 App에서 할 일 아이템을 생성하는 함수 onCreate가 필요하다. 따라서 TodoStateContext에서 데이터를 받을 필요는 없으며, TodoDispatchContext에서 함수 onCreate만 받으면 된다.
+
+// TodoEditor.js
+import { useContext } from "react";
+import { TodoDispatchContext } from "./App";
+(...)
+
+const TodoEditor = () => {
+    const {onCreate} = useContext(TodoDispatchContext);
+    (...).
+};
+export default TodoEditor;
+useContext를 호출해 TodoDispatchContext에서 함수 onCreate를 불러온다.
+TodoList 수정하기
+
+TodoList 컴포넌트는 할 일 데이터인 todo를 사용하므로, 이것을 TodoStateContext에서 받도록 수정한다.
+
+// TodoList.js
+(...)
+import { TodoStateContext } from "./App"
+(...)
+const TodoList = () => {
+    const todo = useContext(TodoStateContext);
+    (...)
+};
+export default TodoList;
+useContext를 호출해 TodoStateContext가 공급하는 데이터를 불러온다. 이때 App 컴포넌트는 TodoStateContext.Provider에서 객체 데이터가 아닌 todo 배열 그 자체를 전달한다. 구조 분해 할당으로 todo를 꺼내면 오류가 발생하므로 수정한다.
+TodoItem 수정하기
+
+TodoItem 컴포넌트는 할 일을 수정하고 삭제하는 함수 onUpdate와 onDelete를 사용하므로 TodoDispatchContext에서 해당 함수를 받도록 수정한다.
+
+// TodoItem.js
+(...)
+import { TodoDispatchContext } from "./App"
+(...)
+const TodoItem = ({id,content,isDone,createdDate}) => {
+    console.log('${id} TodoItem 업데이트');
+    const {onUpdate,onDelete} = useContext(TodoDispatchContext);
+    (...)
+};
+export default React.memo(TodoItem);
+useContext를 호출해 TodoDispatchContext가 공급하는 데이터 중 함수 onUpdate와 onDelete를 불러온다.
+
+
+
+
+2-(8) 리팩토링이 잘 되었는지 확인하기2
+
+최적화를 위해 TodoContext를 TodoStateConext와 TodoDispatchContext로 분리했다. 인제 의도대로 잘 동작하는지 할 일 아이템을 추가, 수정, 삭제하며 확인한다. 새로운 할 일 아이템을 생성하면 생성한 TodoItem만 렌더링하고 나머지 컴포넌트는 더 이상 리렌더되지 않는다.
+
+
+
+출처 :  이정환, 『한 입 크기로 잘라먹는 리액트』, 프로그래밍인사이트(2023), p.386-407.
+
+Corner React.js 1
+
+Editor: Ninanyu
