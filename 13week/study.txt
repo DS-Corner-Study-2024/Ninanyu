@@ -1,0 +1,401 @@
+1. 프로젝트 준비하기
+세 번째 프로젝트: [감정 일기장]앱 만들기
+요구사항 분석 -> 리액트 앱 만들기 -> 폰트 설정 -> 이미지 준비
+
+1-(1) 요구사항 분석하기
+[감정 일기장]은 일기를 작성하면서 그날의 자기 감정을 표현하는 서비스다. [감정 일기장]은 총 4개의 페이지로 구성되어 있다.
+
+<Home 페이지>
+Home은 사용자가 앱에 접속하면 처음으로 만나는 페이지. 보통 인덱스 페이지라고 부르며 경로는 '/'이다.
+Home 페이지는 크게 상단 헤더 섹션과 하단 일기 리스트로 구성된다. 헤더 섹셔에는 월 단위로 일기를 조회하는 기능이 있는데, 좌우 버튼을 클릭하면 월 단위로
+날짜를 이동한다. 일기 리스트 섹션에는 '최신순','오래된 순'으로 일기 리스트를 정렬하는 기능과 새로운 일기를 추가하는 기은이 있다. <새 일기 쓰기> 버튼을
+클릭하면 새로운 일기를 작성하는 New 페이지로 이동한다.
+
+<New 페이지>
+새로운 일기를 추가하는 페이지. 경로는 '/new'다. New는 <뒤로 가기> 버튼이 있는 헤더와 날짜 입력, 감정 이미지 선택, 일기 작성폼으로 구성된다.
+페이지 하단에는 <취소하기>,<작성 완료> 버튼이 있다. 사용자가 New 페이지에서 일기를 작성하고 <작성 완료> 버튼을 클릭하면, Home으로 돌아간다. 
+이때 작성한 일기가 Home 페이지의 리스트에 추가된다.
+
+<Diary 페이지>
+Diary는 작성한 일기를 상세히 조회하는 페이지다. Home에서 일기 리스트를 조회한 다음, 특정 일기를 클릭하면 Diary 페이지로 이동한다. 흔히 이런 페이지를
+상세 또는 콘텐츠 페이지라고 한다. 페이지 경로는 '/diary/(일기)id'다. Diary 페이지 헤더에는 <뒤로 가기>와 <수정하기> 버튼이 있다. 헤더의 <수정하기> 
+버튼을 클릭하면 일기를 수정하는 Edit 페이지로 이동한다.
+
+<Edit 페이지>
+Edit은 작성한 일기를 수정하는 페이지다. Home 또는 Diary에서 <수정하기> 버튼을 클릭하면 Edit 페이지로 이동한다. 페이지 경로는 '/edit/(일기)id'다.
+새 일기를 작성하는 New 페이지 모습과 유사하며 차이점은 Edit 페이지 헤더의 제목이 달라졌고, <삭제하기> 버튼이 추가 되었다는 점이다. <삭제하기> 버튼을
+클릭하면 일기를 삭제한다. 이때 리스트에 있는 일기 아이템도 삭제된다. 나머지 기능은 New 페이지와 동일하다.
+
+1-(2) 리액트  앱 만들기
+프로젝트 1,2와 동일하게 진행
+
+1-(3) 폰트 설정하기
+리액트 앰에서 사용자가 원하는 폰트를 지정할 때는 파일을 다운로드해 프로젝트에 포함하거나 웹에서 불러오는 방법이 있다. 특정 URL로 폰트를 가져오는 '웹 폰트'
+방식을 이용하겠다.
+
+<구글 Fonts에 접속해 폰트 가져오기>
+웹 폰트를 가져오려면 이를 저장한 서버의 주소부터 알아야 한다. 이때 활용하면 유용한 서비스가 구글 Fonts다.
+
+<가져온 폰트 적용하기>
+App.js에서 감정 일기장이라는 글을 렌더링하여 확인하기.
+
+import './App.css';
+
+function App() {
+  return (
+  <div className="App">
+    <h1>감정 일기장</h1>
+  </div>
+  );
+}
+
+export default App;
+
+1-(4) 이미지 준비하기
+<감정 이미지 다운로드하기>
+이미지 또한 import문으로 불러와 <img> 태그와 함께 사용한다.
+
+import './App.css';
+import emtion1 from "./img/emotion1.png";
+
+function App() {
+  return (
+  <div className="App">
+    <img alt="감정1" src={emtion1} />
+  </div>
+  );
+}
+
+export default App;
+
+개발자 도구에서 페이지에 렌더링되는 모습을 확인할 수 있다.
+
+<이미지를 불러오는 함수 만들기>
+[감정 일기장] 프로젝트에서는 감정 이미지를 여러 컴포넌트 또는 페이지엥서 불러오기 때문에 컴포넌트에서 이미지를 일일이 불러오는 방식은 불편하다.
+따라서 이미지 번호에 맞게 적절한 이미지를 반환하는 함수를 만드는 게 필요하다. 그리고 이미지 반환 함수는 별도의 파일에서 만ㄷ르어야 한다. 앞으로 감정
+이미지를 사용하는 컴포넌트나 페이지는 이 파일에서 이미지 반환 함수를 불러올 수 있어야 한다.
+src 폴더에서 util.js 파일을 생성한 후 감정 이미지를 반환하는 함수를 만든다.
+
+import emotion1 from "./img/emotion1.png";
+import emotion2 from "./img/emotion2.png";
+import emotion3 from "./img/emotion3.png";
+import emotion4 from "./img/emotion4.png";
+import emotion5 from "./img/emotion5.png";
+
+import emotion1 from "./img/emotion1.png";
+import emotion2 from "./img/emotion2.png";
+import emotion3 from "./img/emotion3.png";
+import emotion4 from "./img/emotion4.png";
+import emotion5 from "./img/emotion5.png";
+
+export const getEmotionImgById = (emotionId) => { ①
+    const targetEmotionId = String(emotionId);    ②
+    switch(targetEmotionId){                      ③ 
+        case "1":
+            return emotion1;
+        case "2":
+            return emotion2;
+        case "3":
+            return emotion3;
+        case "4":
+            return emotion4;
+        case "5":
+            return emotion5;
+        default:
+            return null;
+    }
+};
+
+① 함수 getEmotionImgById의 매개변수 emtionId에는 페이지나 컴포넌트에서 전달된 감정 이미지 번호가 저장된다.
+② emtionId가 문자열이 아닌 숫자로 제공될 수도 있기 때문에 String 메서드를 이용해 명시적으로 형 변환한다.
+③ switch문으로 번호와 일치하는 이미지를 찾아 반환한다.
+
+App 컴포넌트에서 함수 getEmotionImgById를 호출해 모든 감정 이미지를 페이지에 렌더링한다.
+
+import { getEmotionImgById } from "./util";
+
+function App() {
+  return (
+    <div className="App">
+      <img alt="감정1" src={getEmotionImgById(1)} />
+      <img alt="감정2" src={getEmotionImgById(2)} />
+      <img alt="감정3" src={getEmotionImgById(3)} />
+      <img alt="감정4" src={getEmotionImgById(4)} />
+      <img alt="감정5" src={getEmotionImgById(5)} />
+    </div>
+  );
+}
+export default App;
+
+프로젝트를 구현하다보면 여러 컴포넌트에서 공통으로 사용할 기능들이 나온다. 이런 기능을 별도 파일에 만들어 두고, 필요할 때 불러다 쓰면 중복 코드를
+피할 수 있다.
+
+
+2. 페이지 라우팅
+2-(1) 라우팅의 기본 개념들
+<라우팅이란?>
+라우팅은 경로를 의미하는 Route와 진행을 뜻하는 ing가 합쳐진 단어로, '경로를 지정하는 과정'이라는 뜻이다. 라우팅은 "데이터 전달을 목적으로 최적의
+경로를 찾아 메시지를 전송하는 과정"이라고 정의할 수 있다.
+
+<페이지 라우팅이란?>
+페이지 라우팅은 요청에 따라 적절한 페이지를 반환하는 일련의 과정이다. 예를 들어 도메인 주소가 winterlood.com인 웹 서비스에서 winterlood.com/blog 또는
+winterlood.com/books와 같은 URL로 페이지를 요청하는 모습을 떠올리면 이해할 수 있다. 그러면 웹 서비스는 요청한 blog 또는 books 페이지를 사용자에게
+보내준다. 이때 요청 URL에서 도메인 주소 winterlood.com/ 뒤에 붙는 blog나 books를 '경로(path)'라고 한다. 결국 페이지 라우팅은 "URL 요청 경로에 맞게
+적절한 페이지를 보여주는 과정"이라고 이해하면 된다.
+
+2-(2) 리액트의 페이지 라우팅
+페이지 라우팅의 구현은 웹 페이지를 어디서 만드느냐에 따라 서버 사이드(Server Side) 렌더링과 클라이언트 사이드(Client Side) 렌더링 두 가지로 구분한다.
+리액트는 이 두 방법 중 브라우저에서 페이지를 만드는 '클라이언트 사이드 렌더링'방식을 채택한다.
+
+<서버 사이드 렌더링>
+서버 사이드 렌더링에서 페이지 라우팅은 다음과 같이 동작한다.
+1. 웹 브라우저에서 winterlood.com/blog라는 URL로 서비스를 요청한다.
+2. 웹 서버는 요청 URL에서 경로 blog를 확인하고, blog.html을  생성해 반환한다.
+3. 웹 브라우저는 웹 서버에서 반환된 blog.html을 보여준다.
+
+사용자가 버튼 또는 링크를 클릭해 페이지를 이동할 때는 다음과 같이 동작한다.
+1. 웹 브라우저에서 winterlood.com/books로 서비스를 요청한다.
+2. 웹 서버는 요청 URL에서 경로 books를 확인하고 books.html을 생성해 반환한다.
+3. 웹 브라우저는 웹 서버가 반환한 books.html을 보여준다. 이때 페이지가 교체되기 때문에 브라우저가 깜빡이면서 새로고침이 발생한다.
+
+이런 식의 페이지 라우팅을 서버 사이드 렌더링이라고 한다. 이 방식은 웹 브라우저에 표시할 페이지를 웹 서버에서 만들어 전달한다.
+서버 사이드 렌더링은 검색 엔진을 최적화하며, 처음 접속할 때 속도가 빠르다는 장점이 있다. 반면 사용자가 페이지를 이동할 때마다 서버가 새로운 페이지를
+생성해 제공하려면 많은 연산을 수행하게 된다. 따라서 수많은 요청이 동시에 이루어지는 서비스라면 서버에 부하가 걸릴 위험성이 높다. 그리고 페이지를 
+이동할 때마다 브라우저는 서버가 제공하는 페이지를 기다려하기 때문에 속도가 느려진다는 단점이 있다.
+
+<클라이언트 사이드 렌더링>
+리액트 앱은 html 파일이 하나뿐인 단일 페이지 애플리케이션(Single Page Application)이다. html 파일이 하나이기 때문에 서버 사이드가 아닌 클라이언트
+사이드 렌더링으로 페이지를 라우팅한다. 클라이언트 사이드 렌더링에서는 페이지를 브라우저가 직접 만드는데 다음과 같이 동작한다.
+1. 웹 브라우저가 winterlood.com/blog로 서비스를 요청한다.
+2. 웹 서버는 요청 URL의 경로를 따지지 않고 페이지의 틀 역할을 하는 index, html과 자바스크립트 애플리케이션인 리액트 앱을 함께 반환한다.
+3. 웹 브라우저는 서버에서 제공된 index.html 페이지를 보여주고, 자바스크립트로 이루어진 리액트 앱을 실행한다. 그리고 리액트 앱은 현재 경로에 맞는
+   페이지를 보여준다.
+4. 사용자가 페이지를 이동하면 웹 브라우저는 서버에서 받은 리액트 앱을 실행해 자체적으로 페이지를 교체한다.
+
+클라이언트 사이드 렌더링의 핵심은 사용자가 보는 페이지를 웹 서버가 아닌 브라우저가 완성한다는 점이다. 브라우저는 처음 접속할 때만 서버에게 데이터를
+요청하며, 페이지를 이동할 때는 별도의 요청을 하지 않는다. 클라이언트 사이드 렌더링에서는 서버가 html 파일과 자바스크립트 애플리케이션을 함께 제공하기
+때문에, 처음 사이트에 접속할 때는 서버 사이드 렌더링보다 속도가 느리다. 그러나 페이지를 이동할 때는 브라우저에서 페이지를 직접 교체하므로 속도가 훨씬
+빠르다. 오늘날 웹 서비스는 메일 전송과 같은 단순 메시지 전달 수준을 넘어 채팅, 화상 통화처럼 사용자끼리 다양하게 상호작용하는 서비스를 제공한다.
+따라서 클라이언트 사이드 렌더링 방식이 페이지를 빠르게 교체한다는 사실은 매우 큰 장점이다.
+
+
+3. 리액트 라우터로 페이지 라우팅하기
+3-(1) 리액트 라우터란?
+리액트 라우터는 Remix 팀에서 제작한 오픈소스 라이브러리다. 이 라우터를 이용하면 단 몇 줄의 코드만으로 여러 페이지로 구성된 리액트 앱을 간단히 구축할
+수 있다.
+
+3-(2) 리액트 라우터 설치하기
+npm을 이용해 리액트 라우터를 [감정 일기장] 프로젝트에 설치한다.
+
+npm i react-router-dom
+
+3-(3) 프로젝트에 라우터 적용하기
+[감정 일기장] 프로젝트에서 설치한 라우터를 적용하기 위해 리액트 라우터가 제공하는 BrowserRouter 컴포넌트로 App을 감싼다.
+
+index.js
+(...)
+import { BrowserRouter } from "react-router-dom";
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(
+    <BrowserRouter>
+        <App />
+    </BrowserRouter>
+);
+
+BrowserRouter에는 브라우저의 주소 변경을 감지하는 기능이 있따. 이 라우터는 컴포넌트가 페이지를 구성하고 이동하는 데 필요한 기능을 다양하게
+제공한다.
+
+3-(4) 페이지 컴포넌트 만들기
+여러 페이지로 구성된 리액트 앱을 리액트 라우터로 만들기 전, 페이지 역할을 담당할 컴포넌트부터 만들어야 한다. 
+
+- Home: 인덱스 페이지
+- New: 새 일기 작성 페이지
+- Diary: 일기 상세 조회 페이지
+- Edit: 작성한 일기를 수정하거나 삭제하는 페이지
+
+페이지 역할을 담당할 컴포넌트는 별도의 폴더로 분리한다. src아래에 pages 폴더를 생성한다.
+
+<Home>
+먼저 인덱스 페이지 역할을 담당할 컴포넌트를 만든다. pages 폴더에 Home.js를 만들고 코드를 작성한다.
+const Home = () => {
+    return <div>Home 페이지입니다</div>;
+};
+export default Home;
+
+<New>
+const New = () => {
+    return <div>New 페이지입니다</div>;
+};
+export default New;
+
+<Diary>
+const Diary = () => {
+    return <div>Diary 페이지입니다다</div>;
+};
+export default Diary;
+
+<Edit>
+const Edit = () => {
+    return <div>Edit 페이지입니다</div>;
+};
+export default Edit;
+
+3-(5) 페이지 라우팅 구현하기
+총 4개의 페이지 컴포넌트를 만들었다. 이제 URL 경로에 따라 브라우저에 적절한 페이지를 렌더링하도록 페이지 라우팅을 구현한다. react-router-dom이
+제공하는 Routes와 Route 컴포넌트를 이용하면 간단하게 구현할 수 있다.
+
+App.js를 다음과 같이 작성한다.
+import { Routes, Route } from "react-router-dom"; 
+import "./App.css";
+import Home from "./pages/Home";                 
+import New from "./pages/New";
+import Diary from "./pages/Diary";
+import Edit from "./pages/Edit";
+
+function App() {
+  return (
+    <div className="App">
+      <Routes>                                    ①
+        <Route path="/" element={<Home/>} />
+        <Route path="/new" element={<New/>} />
+        <Route path="/diary" element={<Diary/>} />
+        <Route path="/edit" element={<Edit/>} />
+      </Routes>
+    </div>
+  );
+}
+
+export default App;
+
+① Routes는 여러 Route 컴포넌트를 감싼다. 그리고 현재 URL 경로에 맞게 적절한 Route 컴포넌트를 페이지에 렌더링한다.
+그 후 Home~Edit 까지 모두 4개의 페이지를 위한 Route 컴포넌트를 작성한다.
+
+Routes 문은 자바스크립트의 switch 문과 유사하다. Routes는 switch, Route를 case로 생각하면 이해하기 쉽다. Routes는 자신이 감싸는 Route 컴포넌트
+중에서 브라우저 주소 표시줄에 입력된 URL 경로와 일치하는 요소를 찾아 페이지에 렌더링한다.
+페이지 렌더링 후 뒤에 주소를 파꿔가며 각 페이지가 잘 렌더링 되는지 확인한다.
+
+3-(6) 페이지 이동 구현하기
+경로로 분리된 페이지 간의 이동 방법을 알아보겠다. HTML에서는 <a> 태그를 이용해 페이지를 이동했는데, 리액트 라우터로 페이지 라우팅을 구현하는 앱에서는
+Link라는 컴포넌트를 이용한다. Link컴포넌트의 사용법은 <Link to='이동할 경로'>링크 이름</Link>   와 같다.
+
+Link 컴포넌트는 to 속성에 경로를 지정해 페이지를 이동한다. 클라이언트 사이드 렌더링은 페이지를 서버에 요청하지 않고 브라우저가 직접 이동시킨다.
+따라서 <a>태그 대신에 Link 컴포넌트를 사용한다.
+App에서 Link 컴포넌트를 이용해 페이지를 이동하도록 링크를 추가한다.
+
+import { Routes, Route, Link } from "react-router-dom"; 
+import "./App.css";
+import Home from "./pages/Home";                  
+import New from "./pages/New";
+import Diary from "./pages/Diary";
+import Edit from "./pages/Edit";
+
+function App() {
+  return (
+    <div className="App">
+      <Routes>
+        <Route path="/" element={<Home/>} />
+        <Route path="/new" element={<New/>} />
+        <Route path="/diary" element={<Diary/>} />
+        <Route path="/edit" element={<Edit/>} />
+      </Routes>
+      <div>
+        <Link to={'/'}>Home</Link>
+        <Link to={'/new'}>New</Link>
+        <Link to={'/diary'}>Diary</Link>
+        <Link to={'/edit'}>Edit</Link>
+      </div>
+    </div>
+  );
+}
+
+export default App;
+
+작성한 4개의 링크를 클릭해 페이지 간에 이동이 잘 구현하는지 확인한다. 링크를 클릭하면 클릭한 페이지로 이동한다. 클라이언트 사이드 렌더링으로 페이지를
+이동하면, 브라우저에서 컴포넌트만 교체하는 식으로 렌더링하므로 이동 속도가 매우 빠르다.
+
+4. 리액트 라우터로 동적 경로 라우팅하기
+동적 경로란 특정 아이템을 나타내는 id처럼 값이 변하는 요소를 URL에 포함하는 경우를 맗나다. 예를 들어 [감정 일기장] 프로젝트에서 일기 아이템의 id가 3인
+상세 페이지의 URL을, '/diary/3'또는 '/diary?id=3'과 같은 동적 경로 형식으로 표기할 수 있다.
+
+4-(1) 동적 경로의 종류
+동적 경로를 표현하는 방법에는 URL 파라미터와 쿼리 스트링 두 가지가 있다.
+
+<URL 파라미터>
+URL 파라미터는 URL에 유동적인 값을 넣는 방법이다. 보통 유동적인 값은 중괄호로 표기한다. 이 방법으로는 특정 id를 포함한 상세 페이지의 URL은 다음과
+같이 표기된다.
+https://localhost:3000/diary/{id}   URL 파라미터 방식은 주로 id나 이름을 이용해 특정 데이터를 조회할 때 사용한다.
+
+<쿼리 스트링>
+쿼리 스트링은 물음표(?) 뒤에 key=value 문법으로 URL에 유동적인 값을 포함하는 방법이다.
+https://localhost:3000?sort=latest
+만약 URL에 유동적인 값을 두 개 이상 포함해야 한다면 &로 구분한다.     https://localhost:3000?sort=latest&page=1
+쿼리 스트링 방식은 보통 게시물 리스트에서 사용자가 정렬 조건을 선택하거나 현재 조회하는 게시판의 페이지를 표현할 때 사용한다.
+
+4-(2) 동적 경로에 대응하기
+<URL 파라미터로 경로 설정하기>
+[감정 일기장] 프로젝트에서 Diary 페이지는 특정 id를 가진 일기를 상세 조회할 때 사용한다. 이 페이지로 이동하기 위해서는 어떤 일기 아이템을 조회할지
+경로를 알려주어야 하는데, 다음과 같이 URL 파라미터 방식을 사용한다.
+https://localhost:3000/diary/3
+동적 경로가 포함된 페이지를 라우팅하려면, Route 컴포넌트에서 URL 파라미터 방식으로 전달해야 한다. App 컴포넌트를 다음과 같이 수정한다.
+
+(...)
+       <Route path="/diary/:id" element={<Diary/>} />
+(...)
+
+브라우저 주소 표시줄에 https://localhost:3000/diary/3을 입력해 Diary 페이지를 잘 렌더링하는지 확인한다. 아직 상세 페이지가 만들어지지 않았으므로
+현재는 Diary 페이지로 이동한다.
+
+<URL 파라미터 값 불러오기>
+이번에는 앞서 URL파라미터로 전달한 일기 id를 불러와 Diary 페이지에서 사용하겠다. 이때 react-router-dom이 제공하는 리액트 훅 useParams를 이용하낟.
+Diary.js를 다음과 같이 수정한다.
+
+import { useParams } from "react-router-dom";
+
+const Diary = () => {
+    const params = useParams();     ①
+    console.log(params);            ②
+
+    return <div>Diary 페이지입니다</div>;
+};
+export default Diary;
+
+① useParams 훅을 호출한다. 이 훅은 브라우저에서 URL을 입력하면 이 경로에 포함된 URL 파라미터를 객체 형태로 반환한다.
+② 위에서 불러온 현재 경로의 URL 파라미터를 콘솔에 출력한다.
+
+localhost:3000/diary/3으로 접속하고, 개발자 도구의 콘솔에서 URL 파라미터 값을 어떻게 출력하는지 확인한다.
+파라미터 값을 사용하려면, 객체를 구조 분해 할당해 필요한 값만 꺼내 쓰면 된다. Diary 컴포넌트를 다음과 같이 수정한다.
+
+import { useParams } from "react-router-dom";
+
+const Diary = () => {
+    const { id } = useParams();
+    return (
+        <div>
+            <div>{id}번 일기</div>
+            <div>Diary 페이지입니다</div>
+        </div>
+    );
+};
+export default Diary;
+
+<쿼리 스트링으로 값 불러오기>
+쿼리 스트링은 URL 경로 다음에 ?로 구분하므로 URL 파라미터처럼 페이지 라우팅을 위한 별도의 설정이 필요 없다. react-router-dom은 쿼리스트링을 편하게
+이용할 수 있도록 useSearchParams라는 리액트 훅을 제공한다. 이 훅을 이용하면 URL에 있는 쿼리 스트링 값을 꺼내 사용할 수 있다. Home 컴포넌트를
+다음과 같이 수정한다.
+
+import { useSearchParams } from "react-router-dom";
+
+const Home = () => {
+    const [searchParams, setSearchParams] = useSearchParams();    ①
+    console.log(searchParams.get("sort"));                        ②
+
+    return <div>Home 페이지입니다</div>;
+};
+export default Home;
+
+① useSearchParams 훅을 호출한다. 이 훅은 useState처럼 배열 형태로 값을 반환한다. 반환 값의 첫 번째 요소는 조회, 수정이 가능한 메서드를 포함하고
+있는 쿼리 스트링 객체이고, 두 번째 요소는 이 객체를 업데이트하는 함수다.
+② useSearchParams가 반환한 첫 번째 요소에서 sort 값을 불러와 콘솔에 출력한다. 이때 get 메서드를 이용한다.
+
+http://localhost:3000/?sort=latest로 접속해 쿼리 스트링으로 설정한 sort 값을 잘 불러오는지 콘솔에서 확인한다.
